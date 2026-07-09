@@ -29,6 +29,7 @@ type GUI struct {
 	searchEntry        *gtk.SearchEntry
 	searchBar          *gtk.SearchBar
 	searchToggleButton *gtk.ToggleButton
+	headerBar          *gtk.HeaderBar
 	window             *gtk.ApplicationWindow
 }
 
@@ -49,7 +50,9 @@ func (gui *GUI) activate(gtkApp *gtk.Application) {
 	gui.searchEntry = builder.GetObject("search_entry").Cast().(*gtk.SearchEntry)
 	gui.searchBar = builder.GetObject("search_bar").Cast().(*gtk.SearchBar)
 	gui.searchToggleButton = builder.GetObject("search_toggle_button").Cast().(*gtk.ToggleButton)
+	gui.headerBar = builder.GetObject("gtk_header_bar").Cast().(*gtk.HeaderBar)
 	gui.window.SetApplication(gtkApp)
+	gui.applyWindowChrome()
 	gui.setupCSS()
 	gui.updateClipboardRows(true)
 	gui.focusClipboardItemByIndex(0)
@@ -59,6 +62,7 @@ func (gui *GUI) activate(gtkApp *gtk.Application) {
 	gui.setupAboutAction(gtkApp)
 	gui.setupActionRunOnStartup(gtkApp)
 	gui.setupCloseOnCopy(gtkApp)
+	gui.setupSimplifiedUI(gtkApp)
 	gui.setupStyleSupport()
 	gui.window.SetIconName(app.id)
 	// Always update startup entry.
@@ -189,10 +193,13 @@ func (gui *GUI) addImageRow(item ClipboardItem) {
 			box.Append(image)
 		} else {
 			paintable := gdk.Paintabler(texture)
-			image := gtk.NewImageFromPaintable(paintable)
-			image.AddCSSClass("item-image")
-			gui.scaleImageToFit(image, texture, 300)
-			box.Append(image)
+			picture := gtk.NewPictureForPaintable(paintable)
+			picture.AddCSSClass("item-image")
+			picture.SetContentFit(gtk.ContentFitContain)
+			picture.SetCanShrink(true)
+			picture.SetHAlign(gtk.AlignStart)
+			gui.scaleImageToFit(picture, texture, 300)
+			box.Append(picture)
 		}
 	}
 
@@ -223,7 +230,7 @@ func (gui *GUI) loadImageFromBase64(base64Data string) *gdk.Texture {
 	return texture
 }
 
-func (gui *GUI) scaleImageToFit(image *gtk.Image, texture *gdk.Texture, maxSize int) {
+func (gui *GUI) scaleImageToFit(picture *gtk.Picture, texture *gdk.Texture, maxSize int) {
 	width := texture.Width()
 	height := texture.Height()
 	newWidth := width
@@ -238,8 +245,9 @@ func (gui *GUI) scaleImageToFit(image *gtk.Image, texture *gdk.Texture, maxSize 
 		}
 		newWidth = int(float64(width) * ratio)
 		newHeight = int(float64(height) * ratio)
-		image.SetSizeRequest(newWidth, newHeight)
 	}
+
+	picture.SetSizeRequest(newWidth, newHeight)
 }
 
 func (gui *GUI) setupEvents(gtkApp *gtk.Application) {
@@ -505,7 +513,7 @@ func (gui *GUI) setupActionRunOnStartup(gtkApp *gtk.Application) {
 		gui.handleRunOnStartup(actionRunOnStartup)
 	})
 	gtkApp.AddAction(actionRunOnStartup)
-	if !hasStartupEntry {
+	if !hasStartupEntry && !config.SimplifiedUI {
 		glib.TimeoutAdd(1000, func() bool {
 			gui.showAddToStartupToast()
 			return false
@@ -520,6 +528,33 @@ func (gui *GUI) setupCloseOnCopy(gtkApp *gtk.Application) {
 		gui.handleCloseOnCopy(actionCloseOnCopy)
 	})
 	gtkApp.AddAction(actionCloseOnCopy)
+}
+
+func (gui *GUI) setupSimplifiedUI(gtkApp *gtk.Application) {
+	initialState := glib.NewVariantBoolean(config.SimplifiedUI)
+	actionSimplifiedUI := gio.NewSimpleActionStateful("simplified_ui", nil, initialState)
+	actionSimplifiedUI.ConnectActivate(func(parameter *glib.Variant) {
+		gui.handleSimplifiedUI(actionSimplifiedUI)
+	})
+	gtkApp.AddAction(actionSimplifiedUI)
+}
+
+func (gui *GUI) handleSimplifiedUI(action *gio.SimpleAction) {
+	currentState := action.State().Boolean()
+	newState := glib.NewVariantBoolean(!currentState)
+	action.SetState(newState)
+	config.SimplifiedUI = newState.Boolean()
+	config.save()
+	gui.applyWindowChrome()
+}
+
+// applyWindowChrome shows or hides the window decorations and header bar
+// according to config.SimplifiedUI. In simplified mode Clyp behaves as a
+// borderless, launcher-style pop-up with no window manager decorations and no
+// header bar / menu.
+func (gui *GUI) applyWindowChrome() {
+	gui.window.SetDecorated(!config.SimplifiedUI)
+	gui.headerBar.SetVisible(!config.SimplifiedUI)
 }
 
 func (gui *GUI) handleCloseOnCopy(action *gio.SimpleAction) {

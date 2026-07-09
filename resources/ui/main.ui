@@ -154,6 +154,10 @@
         <attribute name="label" translatable="yes">Close on Copy</attribute>
         <attribute name="action">app.close_on_copy</attribute>
       </item>
+      <item>
+        <attribute name="label" translatable="yes">Simplified UI (No Decorations)</attribute>
+        <attribute name="action">app.simplified_ui</attribute>
+      </item>
     </section>
     <section>
       <item>
