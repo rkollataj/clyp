@@ -1,33 +1,173 @@
+/* Rofi-inspired (Nord frost) theme for Clyp. */
+
+@define-color clyp_bg        rgba(49, 55, 68, 0.98);
+@define-color clyp_bg_solid  #313744;
+@define-color clyp_input_bg  #3b4252;
+@define-color clyp_accent    #84bac9;
+@define-color clyp_fg        #d8dee9;
+@define-color clyp_fg_dim    #9aa5b1;
+@define-color clyp_sel_fg    #2e3440;
+
+/* Transparent window so the rounded panel floats like rofi. Requires a
+   compositor; without one the corners fall back to the panel colour. */
+window,
+window.background {
+    background-color: transparent;
+    color: @clyp_fg;
+}
+
+/* The main container is the rofi-style panel: rounded, bordered, shadowed. */
+.clyp-panel {
+    background-color: @clyp_bg;
+    border: none;
+    border-radius: 14px;
+    margin: 10px;
+    /* 6px here + the 2px row margin = 8px, matching the row side margin. */
+    padding: 6px 0;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* Header bar (only shown when decorations are enabled). */
+headerbar,
 .titlebar {
-    background: var(--theme_bg_color);
-    border-bottom: none;
+    background-color: @clyp_bg_solid;
+    color: @clyp_fg;
+    border: none;
+    box-shadow: none;
+    min-height: 0;
+}
+
+headerbar button,
+.titlebar button {
+    color: @clyp_fg;
+    background: transparent;
+    border: none;
     box-shadow: none;
 }
 
-.toggle {
+headerbar button:hover,
+.titlebar button:hover,
+headerbar button:checked,
+.titlebar button:checked {
+    background-color: alpha(@clyp_accent, 0.25);
+}
+
+/* Search bar / entry — the rofi input box. */
+.search-bar {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+entry,
+entry.search {
+    background-color: @clyp_input_bg;
+    background-image: none;
+    color: @clyp_fg;
+    border: 2px solid @clyp_accent;
+    border-radius: 10px;
+    padding: 8px 12px;
+    margin: 8px;
+    caret-color: @clyp_accent;
+    box-shadow: none;
+    outline: none;
+}
+
+entry:focus,
+entry.search:focus,
+entry:focus-within {
+    border-color: @clyp_accent;
+    box-shadow: none;
+}
+
+entry image,
+entry.search image {
+    color: @clyp_accent;
+}
+
+entry text selection {
+    background-color: @clyp_accent;
+    color: @clyp_sel_fg;
+}
+
+/* Clipboard items list. */
+list,
+.clipboard-list {
+    background-color: transparent;
+}
+
+.clipboard-list row {
+    background-color: transparent;
+    color: @clyp_fg;
+    border: none;
+    border-radius: 10px;
+    margin: 2px 8px;
+    padding: 0;
+}
+
+.clipboard-list row:hover {
+    background-color: alpha(@clyp_accent, 0.14);
+}
+
+.clipboard-list row:selected {
+    background-color: @clyp_accent;
+    color: @clyp_sel_fg;
+}
+
+/* Kill the focus ring GTK draws on the selected row when the list is focused. */
+.clipboard-list row,
+.clipboard-list row:focus,
+.clipboard-list row:focus-visible,
+.clipboard-list row:focus-within,
+.clipboard-list row:selected:focus,
+.clipboard-list row:selected:focus-visible {
+    outline: none;
+    box-shadow: none;
     border: none;
 }
 
-.clipboard-list {
-    background: var(--theme_bg_color);
-}
-
-.clipboard-list, .clipboard-list * {
-    border-radius: 0;
-    border-top: none;
-    border-right: none;
-    border-left: none;
+.clipboard-list row:selected label,
+.clipboard-list row:selected .title {
+    color: @clyp_sel_fg;
 }
 
 .clipboard-list .subtitle {
-    font-size: 70%;
-    opacity: 0.5;
+    font-size: 80%;
+    color: @clyp_fg_dim;
+    opacity: 1;
 }
 
-.toast {
-    background: var(--theme_selected_bg_color);
-    color: var(--theme_selected_fg_color);
+.clipboard-list row:selected .subtitle {
+    color: @clyp_sel_fg;
+    opacity: 0.75;
+}
+
+.item-image {
     border-radius: 8px;
+}
+
+/* Slim, accent-tinted scrollbar. */
+scrollbar {
+    background: transparent;
+    border: none;
+}
+
+scrollbar slider {
+    background-color: alpha(@clyp_accent, 0.4);
+    border-radius: 8px;
+    min-width: 6px;
+    min-height: 6px;
+}
+
+scrollbar slider:hover {
+    background-color: alpha(@clyp_accent, 0.7);
+}
+
+/* Startup toast (decorated mode only). */
+.toast {
+    background-color: @clyp_accent;
+    color: @clyp_sel_fg;
+    border-radius: 10px;
     padding: 8px 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
 }

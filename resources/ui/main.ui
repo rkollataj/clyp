@@ -27,6 +27,9 @@
     </property>
     <property name="child">
       <object class="GtkBox" id="gtk_box">
+        <style>
+          <class name="clyp-panel"/>
+        </style>
         <property name="orientation">1</property>
         <property name="halign">fill</property>
         <property name="valign">fill</property>
@@ -45,7 +48,8 @@
             <child>
               <object class="GtkSearchEntry" id="search_entry">
                 <property name="can-focus">true</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
+                <property name="hexpand">true</property>
               </object>
             </child>
           </object>
@@ -71,7 +75,7 @@
                 <property name="selection-mode">1</property>
                 <property name="halign">fill</property>
                 <property name="valign">start</property>
-                <property name="show-separators">true</property>
+                <property name="show-separators">false</property>
               </object>
             </child>
           </object>
